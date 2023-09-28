@@ -1,6 +1,7 @@
 use std::{
-    fs::File,
+    fs::{File, OpenOptions},
     hint::black_box,
+    io::Write,
     path::{Path, PathBuf},
     process::Command,
     time::{Duration, Instant},
@@ -49,6 +50,11 @@ fn flush_disk_cache() -> Result<()> {
                 purge_output.status
             );
         }
+    } else if std::env::consts::OS == "linux" {
+        let mut drop_caches = OpenOptions::new()
+            .write(true)
+            .open("/proc/sys/vm/drop_caches")?;
+        drop_caches.write_all("3".as_bytes())?;
     }
 
     Ok(())
